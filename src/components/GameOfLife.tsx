@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useRef } from 'react'
-import { Button } from "@material-ui/core"
+import Title from "./Title"
 import produce from "immer"
 
-import { GRID_COLUMN, GRID_ROW, CELL_SIZE, BORDER_SIZE, OPERATION } from './const'
+import { GRID_COLUMN, GRID_ROW, CELL_SIZE, BORDER_SIZE, OPERATION, DELAY, GENERATE_POPULATION } from './const'
 
 export default function GameOfLife(): JSX.Element {
-
     const [grid, setGrid]: [number[][], React.Dispatch<React.SetStateAction<number[][]>>] = useState<number[][]>(() => {
         const rows = []
         for (let i = 0; i < GRID_ROW; i++) {
@@ -77,7 +76,7 @@ export default function GameOfLife(): JSX.Element {
             })
         })
 
-        setTimeout(runSimulation, 500)
+        setTimeout(runSimulation, DELAY)
     }, [])
 
     function handleSimulation(): void {
@@ -88,18 +87,18 @@ export default function GameOfLife(): JSX.Element {
         }
     }
 
+    function generatePopulation(): void {
+        setGrid(prev => {
+            return produce(prev, gridCopy => {
+                return GENERATE_POPULATION(gridCopy)
+            })
+        })
+    }
+
     return (
         <>
-            <Button
-                color={running ? "secondary" : "primary"}
-                onClick={handleSimulation}
-                variant="contained"
-            >
-                {running ? "STOP" : "START"}
-            </Button>
-            <div style={{
-            }}
-            >
+            <Title running={running} handleSimulation={handleSimulation} generatePopulation={generatePopulation} />
+            <div>
                 {grid.map((row, indexI) =>
                     <div
                         key={`row-${indexI}`}
@@ -117,7 +116,6 @@ export default function GameOfLife(): JSX.Element {
                                 onMouseDown={() => handleMouseDown(indexI, indexJ)}
                                 onMouseEnter={() => handleMouseEnter(indexI, indexJ)}
                                 onMouseUp={() => handleMouseUp(indexI, indexJ)}
-                                onClick={() => toggleCell(indexI, indexJ)}
                             ></div>
                         )}
                     </div>
